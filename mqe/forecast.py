@@ -14,7 +14,7 @@ import shap
 import lightgbm as lgb
 import xgboost as xgb
 import catboost as cb
-from sklearn.experimental import enable_hist_gradient_boosting
+#from sklearn.experimental import enable_hist_gradient_boosting
 import sklearn as skl
 import statsmodels.api as sm
 
@@ -317,7 +317,7 @@ class Trial(object):
             else: 
                 raise ValueError("'objective' for xgboost must be 'mean'.")
 
-            model = xgboost.XGBRegressor(objective=objective_xgb,
+            model = xgb.XGBRegressor(objective=objective_xgb,
                                          booster=self.model_params[model_name].get('booster', 'gbtree'),
                                          n_estimators=num_rounds,
                                          learning_rate=self.model_params[model_name].get('learning_rate', 0.1), 
@@ -353,7 +353,7 @@ class Trial(object):
             else: 
                 raise ValueError("'objective' for catboost must be one of ['mean', 'quantile']")
 
-            model = lgb.CatBoostRegressor(objective=objective_cb,
+            model = cb.CatBoostRegressor(objective=objective_cb,
                                           boosting_type=self.model_params[model_name].get('boosting_type', 'Plain'),
                                           grow_policy=self.model_params[model_name].get('grow_policy', 'SymmetricTree'),
                                           n_estimators=num_rounds,
