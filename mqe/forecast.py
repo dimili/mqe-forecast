@@ -74,8 +74,11 @@ class Trial(object):
             self.categorical_features = 'auto'
         if 'feature_lags' in params_json:
             self.feature_lags = params_json['feature_lags']
+            ftrs = self.features + list(self.feature_lags.keys())
+            self.ini_features = list(dict.fromkeys(ftrs)) # Removes dublicate features
         else: 
             self.feature_lags = None
+            self.ini_features = self.features
         if 'diff_target_with_physical' in params_json:
             self.diff_target_with_physical = params_json['diff_target_with_physical']
         else: 
@@ -128,7 +131,7 @@ class Trial(object):
 
 
     def initial_checks(self, df):
-        if not all([feature in df.columns.levels[1] for feature in self.features]):
+        if not all([feature in df.columns.levels[1] for feature in self.ini_features]):
             raise ValueError('All specified features are not present in data.')
 
 
@@ -159,6 +162,7 @@ class Trial(object):
             dfs_lag = []
             for lag, variables in vspec.groupby("Lag").groups.items():
                 df_lag = df.loc[:, sorted(variables)].groupby('ref_datetime').shift(lag)
+                #df_lag = df.loc[:, sorted(variables)].shift(lag)
 
                 df_lag.columns = ['%s_lag%s' % (variable, lag) for variable in sorted(variables)]
                 dfs_lag.append(df_lag)
@@ -172,15 +176,20 @@ class Trial(object):
         # Split up dataset in features and target
         if split:
             df = pd.concat([df.loc[pd.IndexSlice[:, s[0]:s[1]], :] for s in split], axis=0).drop_duplicates(keep='first')
-        df_X = df.loc[:, self.features]
+
+
+        #df_X = df.loc[:, self.features]
+        df_X = df.loc[:, self.ini_features]
         df_y = df.loc[:, [self.target]]
 
         # Add lagged variables
         if self.feature_lags is not None: 
             df_X, lagged_features = add_lags(df_X, self.feature_lags)            
             self.all_features = self.features+lagged_features
+            df_X = df_X.loc[:, self.all_features]
         else:
             self.all_features = self.features
+            df_X = df_X.loc[:, self.all_features]
 
         # Remove samples where either all features are nan or target is nan
         is_nan = df_X.isna().all(axis=1) | df_y.isna().all(axis=1)
@@ -435,17 +444,17 @@ class Trial(object):
 
         elif model_name.split('_')[0] == 'skols':
             df_temp = df_model_train.dropna()
-            model = sklearn.linear_model.LinearRegression()
+            model = skl.linear_model.LinearRegression()
             model.result = model.fit(df_temp[[self.target]], df_temp[self.all_features])
 
         elif model_name.split('_')[0] == 'sklasso':
             df_temp = df_model_train.dropna()
-            model = sklearn.linear_model.Lasso()
+            model = skl.linear_model.Lasso()
             model.result = model.fit(df_temp[[self.target]], df_temp[self.all_features])
 
         elif model_name.split('_')[0] == 'skridge':
             df_temp = df_model_train.dropna()
-            model = sklearn.linear_model.Ridge()
+            model = skl.linear_model.Ridge()
             model.result = model.fit(df_temp[[self.target]], df_temp[self.all_features])
 
         elif model_name.split('_')[0] == 'statquant':
