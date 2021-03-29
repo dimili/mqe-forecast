@@ -76,7 +76,9 @@ preprocess/preprocess_gefcom2014_load_example.py
 These preprocessing scripts should be updated with the relevant feature engineering and takes input from the parameter files. To run the preprocessing script for the wind track (other tracks are analog) as:
 
 ```
-python preprocess/preprocess_gefcom2014_wind_example.py params/params_competition_gefcom2014_wind_example.json
+python preprocess/preprocess_gefcom2014_wind_example.py params/params_gefcom2014_wind_example.json
+python preprocess/preprocess_gefcom2014_solar_example.py params/params_gefcom2014_solar_example.json
+python preprocess/preprocess_gefcom2014_load_example.py params/params_gefcom2014_load_example.json
 ```
 
 the processed data file will be saved to:
@@ -89,7 +91,7 @@ Wind track preprocessed data saved to: ./data/gefcom2014/preprocessed/gefcom2014
 To train models, predict and save the results run the following script:
 
 ```
-python ./main.py params/params_competition_gefcom2014_wind_example.json
+python mqe/forecast.py params/params_gefcom2014_wind_example.json
 ```
 
 The results will be saved to the `results` folder. Train models for other tracks by changing the parameters file.
